@@ -85,14 +85,16 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'Kumpra',
+        'NAME': 'kumpra',
         'USER': 'postgres',
         'PASSWORD': 'Rightech777',
-        'HOST': 'localhost',
-        'PORT': '5433',
+        'HOST': 'localhost',  # Gi-ilis gikan sa 'localhost' para mas sigurado
+        'PORT': '5432',       # Gi-ilis gikan sa 5433 base sa imong netstat
     }
 }
 
+# settings.py
+AUTH_USER_MODEL = 'api.User'
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
@@ -129,3 +131,17 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+
+# config/settings.py
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'rai.jedkerk@gmail.com' 
+EMAIL_HOST_PASSWORD = 'dhpjekrgiaokcpqc' 
+
+# The "Kumpra.ph" must be wrapped in double quotes
+# settings.py
+DEFAULT_FROM_EMAIL = 'rai.jedkerk@gmail.com'
