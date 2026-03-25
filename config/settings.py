@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -82,14 +83,15 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+# settings.py
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'kumpra',
+        'NAME': 'kumpraph',  # Change this from 'kumpra' to 'kumpraph'
         'USER': 'postgres',
         'PASSWORD': 'Rightech777',
-        'HOST': 'localhost',  # Gi-ilis gikan sa 'localhost' para mas sigurado
-        'PORT': '5432',       # Gi-ilis gikan sa 5433 base sa imong netstat
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
@@ -145,3 +147,28 @@ EMAIL_HOST_PASSWORD = 'dhpjekrgiaokcpqc'
 # The "Kumpra.ph" must be wrapped in double quotes
 # settings.py
 DEFAULT_FROM_EMAIL = 'rai.jedkerk@gmail.com'
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
+
+SIMPLE_JWT = {
+    # Set the access token to last for 24 hours instead of 5 minutes
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
+    
+    # Set the refresh token to last for 7 days
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    
+    # Standard settings for JWT
+    "ALGORITHM": "HS256",
+    "SIGNING_KEY": SECRET_KEY,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "USER_ID_FIELD": "id",
+    "USER_ID_CLAIM": "user_id",
+}

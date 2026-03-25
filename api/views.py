@@ -1,7 +1,7 @@
-from rest_framework import generics, status, permissions
+from rest_framework import generics, status, permissions, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import RefreshToken # Added for actual login session
+from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from django.core.mail import send_mail
 from django.conf import settings
@@ -20,7 +20,6 @@ class RegisterView(generics.CreateAPIView):
         user = serializer.save()
         otp_code = user.generate_otp()
         
-        # Log to terminal for local debugging
         print(f"--- DEBUG: OTP for {user.email} is {otp_code} ---")
         
         subject = "Verify your Kumpra.ph Account"
@@ -84,7 +83,6 @@ class VerifyEmailView(APIView):
             return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
 class LoginView(APIView):
-    """Handles User Login with JWT Token generation"""
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
@@ -94,37 +92,43 @@ class LoginView(APIView):
 
         if user:
             if not user.is_verified:
-                return Response(
-                    {"error": "Please verify your email before logging in.", "needs_verification": True}, 
-                    status=status.HTTP_403_FORBIDDEN
-                )
+                return Response({"error": "Verify email first."}, status=status.HTTP_403_FORBIDDEN)
 
-            # Generate JWT Tokens so the user stays logged in on Next.js
             refresh = RefreshToken.for_user(user)
             return Response({
                 "user": UserSerializer(user).data,
-                "access": str(refresh.access_token),
+                "access": str(refresh.access_token), # This is the 'Passport'
                 "refresh": str(refresh),
-                "message": "Login successful"
             }, status=status.HTTP_200_OK)
         
-        return Response({"error": "Invalid email or password."}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+
 
 # --- DELIVERY ADDRESSES ---
+
+# --- ADDRESS VIEWS ---
 
 class DeliveryAddressListCreateView(generics.ListCreateAPIView):
     serializer_class = DeliveryAddressSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return DeliveryAddress.objects.filter(user=self.request.user).order_by("-id")
+        # SECURITY: Only return addresses belonging to the logged-in user
+        return DeliveryAddress.objects.filter(user=self.request.user).order_by('-is_default', '-created_at')
 
     def perform_create(self, serializer):
+        # LOGIC: If saving a new default, unset the old default
+        if serializer.validated_data.get('is_default'):
+            DeliveryAddress.objects.filter(user=self.request.user, is_default=True).update(is_default=False)
+        
+        # SECURITY: Automatically tie the address to the account from the token
         serializer.save(user=self.request.user)
 
 class DeliveryAddressDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """Handles GET (one), PUT/PATCH (update), and DELETE for a specific address"""
     serializer_class = DeliveryAddressSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
+        # Ensure users can only modify their own addresses
         return DeliveryAddress.objects.filter(user=self.request.user)

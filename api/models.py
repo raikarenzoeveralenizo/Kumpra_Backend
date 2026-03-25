@@ -1,7 +1,9 @@
 import random
 from django.db import models
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 
+# --- USER MANAGER ---
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
@@ -24,6 +26,7 @@ class UserManager(BaseUserManager):
         
         return self.create_user(email, password, **extra_fields)
 
+# --- CUSTOM USER MODEL ---
 class User(AbstractUser):
     # Remove username field, use email as unique identifier
     username = None
@@ -31,7 +34,7 @@ class User(AbstractUser):
     full_name = models.CharField(max_length=255)
     contact_number = models.CharField(max_length=11)
 
-    # --- Verification Fields ---
+    # Verification Fields
     is_verified = models.BooleanField(default=False)
     otp = models.CharField(max_length=6, blank=True, null=True)
 
@@ -50,44 +53,47 @@ class User(AbstractUser):
         self.save()
         return code
 
+# --- DELIVERY ADDRESS MODEL ---
 class DeliveryAddress(models.Model):
-    LABEL_CHOICES = [
-        ("Home", "Home"),
-        ("Work", "Work"),
-        ("Other", "Other"),
-    ]
-
+    # Links to the User model above
     user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="delivery_addresses",
-        null=True,
-        blank=True
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
+        related_name="addresses"
     )
-    label = models.CharField(max_length=20, choices=LABEL_CHOICES, default="Home")
-    full_name = models.CharField(max_length=100)
-    phone = models.CharField(max_length=11)
-    street = models.CharField(max_length=255)
-    region = models.CharField(max_length=255)
-    full_address = models.TextField(blank=True)
-    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
-    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    
+    # Recipient Info
+    full_name = models.CharField(max_length=255)
+    phone = models.CharField(max_length=20)
+    
+    # Philippine Address Hierarchy (matching your React Modal)
+    region = models.CharField(max_length=100)
+    province = models.CharField(max_length=100)
+    city = models.CharField(max_length=100)
+    barangay = models.CharField(max_length=100)
+    
+    # Specific Location Details
+    street_address = models.CharField(max_length=255)
+    postal_code = models.CharField(max_length=10)
+    label = models.CharField(max_length=20, default="Home") # e.g., "Home", "Work"
     is_default = models.BooleanField(default=False)
+    
+    # Coordinates for the Leaflet Map View
+    lat = models.DecimalField(max_digits=12, decimal_places=9)
+    lng = models.DecimalField(max_digits=12, decimal_places=9)
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        verbose_name = "Delivery Address"
+        verbose_name_plural = "Delivery Addresses"
+
     def save(self, *args, **kwargs):
-        # Auto-generate full address
-        self.full_address = f"{self.street}, {self.region}"
-        
-        # Ensure only one default address per user
-        if self.is_default and self.user:
-            DeliveryAddress.objects.filter(
-                user=self.user, 
-                is_default=True
-            ).exclude(pk=self.pk).update(is_default=False)
-            
+        # If this address is set as default, set all other user addresses to False
+        if self.is_default:
+            DeliveryAddress.objects.filter(user=self.user).exclude(pk=self.pk).update(is_default=False)
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.full_name} - {self.label}"
+        return f"{self.label} - {self.full_name} ({self.city})"

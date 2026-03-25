@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import DeliveryAddress, User
 
+# --- USER SERIALIZER ---
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -8,6 +9,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ["id", "full_name", "email", "contact_number", "is_verified"]
         read_only_fields = ["is_verified"]
 
+# --- REGISTRATION SERIALIZER ---
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
 
@@ -26,29 +28,29 @@ class RegisterSerializer(serializers.ModelSerializer):
         )
         return user
 
+# --- DELIVERY ADDRESS SERIALIZER ---
 class DeliveryAddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = DeliveryAddress
         fields = [
-            "id",
-            "user",
-            "label",
-            "full_name",
-            "phone",
-            "street",
-            "region",
-            "full_address",
-            "latitude",
-            "longitude",
-            "is_default",
-            "created_at",
-            "updated_at",
+            'id', 
+            'full_name', 
+            'phone', 
+            'region', 
+            'province', 
+            'city', 
+            'barangay', 
+            'street_address', 
+            'postal_code', 
+            'label', 
+            'is_default', 
+            'lat', 
+            'lng'
         ]
-        read_only_fields = ["id", "full_address", "created_at", "updated_at"]
+        read_only_fields = ['id']
 
     def validate_phone(self, value):
-        if not value.isdigit():
-            raise serializers.ValidationError("Phone number must contain digits only.")
-        if len(value) != 11:
-            raise serializers.ValidationError("Phone number must be exactly 11 digits.")
+        """Optional: Add custom validation for PH phone numbers."""
+        if len(value) < 10:
+            raise serializers.ValidationError("Phone number is too short.")
         return value

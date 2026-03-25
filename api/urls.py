@@ -1,7 +1,8 @@
 from django.urls import path
 from .views import (
     RegisterView, 
-    VerifyEmailView,  # Import the new view
+    ResendOTPView,
+    VerifyEmailView, 
     LoginView, 
     DeliveryAddressListCreateView, 
     DeliveryAddressDetailView
@@ -10,7 +11,8 @@ from .views import (
 urlpatterns = [
     # Auth Endpoints
     path("register/", RegisterView.as_view(), name="register"),
-    path("verify-email/", VerifyEmailView.as_view(), name="verify-email"), # Added this
+    path("resend-otp/", ResendOTPView.as_view(), name="resend-otp"),
+    path("verify-email/", VerifyEmailView.as_view(), name="verify-email"),
     path("login/", LoginView.as_view(), name="login"),
     
     # Address Endpoints
