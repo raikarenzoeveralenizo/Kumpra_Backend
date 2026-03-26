@@ -25,13 +25,19 @@ class UserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
 
 class User(AbstractUser):
-    # Remove username field, use email as unique identifier
     username = None
     email = models.EmailField(unique=True)
     full_name = models.CharField(max_length=255)
     contact_number = models.CharField(max_length=11)
 
-    # --- Verification Fields ---
+    GENDER_CHOICES = [
+        ("Male", "Male"),
+        ("Female", "Female"),
+        ("Other", "Other"),
+    ]
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, blank=True, null=True)
+    date_of_birth = models.DateField(blank=True, null=True)
+
     is_verified = models.BooleanField(default=False)
     otp = models.CharField(max_length=6, blank=True, null=True)
 
@@ -44,7 +50,6 @@ class User(AbstractUser):
         return self.email
 
     def generate_otp(self):
-        """Generates a random 6-digit code and saves it to the user."""
         code = str(random.randint(100000, 999999))
         self.otp = code
         self.save()

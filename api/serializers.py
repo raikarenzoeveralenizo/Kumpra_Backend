@@ -4,8 +4,15 @@ from .models import DeliveryAddress, User
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        # Added 'is_verified' so the frontend knows if the user is confirmed
-        fields = ["id", "full_name", "email", "contact_number", "is_verified"]
+        fields = [
+            "id",
+            "full_name",
+            "email",
+            "contact_number",
+            "gender",
+            "date_of_birth",
+            "is_verified",
+        ]
         read_only_fields = ["is_verified"]
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -13,16 +20,23 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["full_name", "email", "contact_number", "password"]
+        fields = [
+            "full_name",
+            "email",
+            "contact_number",
+            "gender",
+            "date_of_birth",
+            "password",
+        ]
 
     def create(self, validated_data):
-        # The create_user method in our modified models.py 
-        # now automatically sets is_verified=False
         user = User.objects.create_user(
             email=validated_data["email"],
             password=validated_data["password"],
             full_name=validated_data["full_name"],
-            contact_number=validated_data["contact_number"]
+            contact_number=validated_data["contact_number"],
+            gender=validated_data.get("gender"),
+            date_of_birth=validated_data.get("date_of_birth"),
         )
         return user
 

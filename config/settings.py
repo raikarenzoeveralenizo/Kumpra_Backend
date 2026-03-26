@@ -87,7 +87,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'kumpra',
         'USER': 'postgres',
-        'PASSWORD': 'Rightech777',
+        'PASSWORD': 'karen_123',
         'HOST': 'localhost',  # Gi-ilis gikan sa 'localhost' para mas sigurado
         'PORT': '5432',       # Gi-ilis gikan sa 5433 base sa imong netstat
     }
