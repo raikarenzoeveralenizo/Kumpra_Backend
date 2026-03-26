@@ -1,13 +1,14 @@
-# requirements.txt (sample for Django REST API + Postgres)
-Django&gt;=5.0,&lt;6.0
-djangorestframework&gt;=3.15,&lt;4.0
-gunicorn&gt;=21.2,&lt;22.0
-psycopg2-binary&gt;=2.9,&lt;3.0
+# requirements.txt (Django REST API + Postgres)
+
+Django>=5.0,<6.0
+djangorestframework>=3.15,<4.0
+gunicorn>=21.2,<22.0
+psycopg2-binary>=2.9,<3.0
 
 # Common extras (optional)
-python-dotenv&gt;=1.0,&lt;2.0
-django-cors-headers&gt;=4.3,&lt;5.0
-whitenoise&gt;=6.6,&lt;7.0
-djangorestframework-simplejwt&gt;=5.3,&lt;6.0
-drf-spectacular&gt;=0.27,&lt;1.0
-Pillow&gt;=10.0,&lt;11.0
+python-dotenv>=1.0,<2.0
+django-cors-headers>=4.3,<5.0
+whitenoise>=6.6,<7.0
+djangorestframework-simplejwt>=5.3,<6.0
+drf-spectacular>=0.27,<1.0
+Pillow>=10.0,<11.0
