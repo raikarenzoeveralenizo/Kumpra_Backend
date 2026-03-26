@@ -23,4 +23,4 @@ EXPOSE 8000
 
 # Run with Gunicorn (recommended for production)
 # Set your WSGI path below (example: config.wsgi:application)
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "Kumpra_Backend.wsgi:application"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "config.wsgi:application"]
