@@ -85,11 +85,11 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'kumpra',
-        'USER': 'postgres',
+        'NAME': 'kompra_db',
+        'USER': 'raidevs',
         'PASSWORD': 'Rightech777',
-        'HOST': 'localhost',  # Gi-ilis gikan sa 'localhost' para mas sigurado
-        'PORT': '5432',       # Gi-ilis gikan sa 5433 base sa imong netstat
+        'HOST': '72.60.233.51',
+        'PORT': '5434',
     }
 }
 
