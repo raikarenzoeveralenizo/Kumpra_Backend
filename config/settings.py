@@ -63,11 +63,11 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'kompra_db',
-        'USER': 'raidevs',
+        'NAME': 'kumpraph',
+        'USER': 'postgres',
         'PASSWORD': 'Rightech777',
-        'HOST': '72.60.233.51',
-        'PORT': '5434',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
