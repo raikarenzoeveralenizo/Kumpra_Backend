@@ -1,23 +1,57 @@
 from django.urls import path
 from .views import (
-    RegisterView, 
+    RegisterView,
     ResendOTPView,
-    VerifyEmailView, 
-    LoginView, 
-    DeliveryAddressListCreateView, 
-    DeliveryAddressDetailView
+    VerifyEmailView,
+    LoginView,
+    DeliveryAddressListCreateView,
+    DeliveryAddressDetailView,
+    ProductListView,
+    ProductDetailView,
+    CategoryListView,
+    OrganizationListView,
+    OrganizationDetailView,
+    BranchDetailView,
+    OutletListView,
+    OutletDetailView,
+    CartView,
+    AddToCartView,
+    UpdateCartItemView,
+    RemoveCartItemView,
+    CheckoutView,
+    OrderListView,
+    OrderDetailView,
+    GlobalSearchView,
 )
 
 urlpatterns = [
-    # --- Authentication Endpoints ---
-    # register/ handles Customers, Store Sellers, and Suppliers via Role logic
     path("register/", RegisterView.as_view(), name="register"),
     path("resend-otp/", ResendOTPView.as_view(), name="resend-otp"),
     path("verify-email/", VerifyEmailView.as_view(), name="verify-email"),
     path("login/", LoginView.as_view(), name="login"),
-    
-    # --- Delivery Address Endpoints ---
-    # Protected by IsAuthenticated; filters data based on request.user
+
     path("addresses/", DeliveryAddressListCreateView.as_view(), name="address-list-create"),
     path("addresses/<int:pk>/", DeliveryAddressDetailView.as_view(), name="address-detail"),
+
+    path("products/", ProductListView.as_view(), name="product-list"),
+    path("products/<int:pk>/", ProductDetailView.as_view(), name="product-detail"),
+    path("categories/", CategoryListView.as_view(), name="category-list"),
+    path("search/", GlobalSearchView.as_view(), name="global-search"),
+
+    path("organizations/", OrganizationListView.as_view(), name="organization-list"),
+    path("organizations/<int:pk>/", OrganizationDetailView.as_view(), name="organization-detail"),
+    path("branches/<int:pk>/", BranchDetailView.as_view(), name="branch-detail"),
+
+    path("outlets/", OutletListView.as_view(), name="outlet-list"),
+    path("outlets/<int:pk>/", OutletDetailView.as_view(), name="outlet-detail"),
+
+    path("cart/", CartView.as_view(), name="cart"),
+    path("cart/add/", AddToCartView.as_view(), name="cart-add"),
+    path("cart/item/<int:pk>/", UpdateCartItemView.as_view(), name="cart-item-update"),
+    path("cart/item/<int:pk>/delete/", RemoveCartItemView.as_view(), name="cart-item-delete"),
+
+    path("checkout/", CheckoutView.as_view(), name="checkout"),
+
+    path("orders/", OrderListView.as_view(), name="order-list"),
+    path("orders/<int:pk>/", OrderDetailView.as_view(), name="order-detail"),
 ]
