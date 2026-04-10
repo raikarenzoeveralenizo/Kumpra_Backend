@@ -170,6 +170,17 @@ class DeliveryAddressListCreateView(generics.ListCreateAPIView):
     def get_queryset(self):
         return DeliveryAddress.objects.filter(user=self.request.user).order_by("-is_default", "-created_at")
 
+    def create(self, request, *args, **kwargs):
+        print("ADDRESS POST DATA:", request.data)
+
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            print("ADDRESS SERIALIZER ERRORS:", serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
