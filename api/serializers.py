@@ -724,12 +724,25 @@ class CheckoutSerializer(serializers.Serializer):
 
         for cart_item in cart_items:
             try:
-                inventory_item = Inventoryitems.objects.get(id=cart_item.product_id)
+                # 1. Get the inventory item and "lock" the row for the transaction
+                inventory_item = Inventoryitems.objects.select_for_update().get(id=cart_item.product_id)
             except Inventoryitems.DoesNotExist:
                 raise serializers.ValidationError(
                     f"Inventory item not found for cart item {cart_item.id}"
                 )
 
+            # 2. SAFETY CHECK: Ensure there is enough stock before proceeding
+            if inventory_item.quantity < cart_item.quantity:
+                raise serializers.ValidationError(
+                    f"Insufficient stock for {inventory_item.itemid.name}. "
+                    f"Available: {inventory_item.quantity}, Requested: {cart_item.quantity}"
+                )
+
+            # 3. DEDUCT THE STOCK <--- This is the missing piece
+            inventory_item.quantity -= cart_item.quantity
+            inventory_item.save()
+
+            # 4. Create the Order Item (Your existing logic)
             Kompracorderitem.objects.create(
                 orderid=order,
                 inventoryitemid=inventory_item,
