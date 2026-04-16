@@ -49,6 +49,8 @@ class User(AbstractUser):
     full_name = models.CharField(max_length=255)
     contact_number = models.CharField(max_length=11)
 
+    profile_image = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
+
     # Multi-Role Logic
     ROLE_CHOICES = [
         ("CUSTOMER", "Customer"),

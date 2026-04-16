@@ -39,6 +39,7 @@ class UserSerializer(serializers.ModelSerializer):
             "date_of_birth",
             "role",
             "is_verified",
+            "profile_image",
         ]
         read_only_fields = ["is_verified"]
 
