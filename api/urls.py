@@ -22,6 +22,7 @@ from .views import (
     OrderListView,
     OrderDetailView,
     GlobalSearchView,
+    UpdateProfileView,
 )
 
 urlpatterns = [
@@ -54,4 +55,6 @@ urlpatterns = [
 
     path("orders/", OrderListView.as_view(), name="order-list"),
     path("orders/<int:pk>/", OrderDetailView.as_view(), name="order-detail"),
+
+    path("user/update-profile/", UpdateProfileView.as_view(), name="update-profile"),
 ]
