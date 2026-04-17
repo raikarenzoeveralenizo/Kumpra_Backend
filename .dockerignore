@@ -15,7 +15,7 @@ htmlcov
 
 # Virtual environments
 venv
-env
+.env
 .venv
 
 # IDE
@@ -38,3 +38,6 @@ docs
 # CI/CD
 .github
 .gitlab-ci.yml
+
+# Environment - but not .env!
+.env.example
