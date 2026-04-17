@@ -7,17 +7,11 @@ import environ
 BASE_DIR = Path(__file__).resolve().parent.parent
 ENV_PATH = BASE_DIR / ".env"
 
-print(f"[DEBUG] BASE_DIR: {BASE_DIR}")
-print(f"[DEBUG] ENV_PATH exists: {ENV_PATH.exists()}")
-
 # Initialize environ
 env = environ.Env()
 
 if ENV_PATH.exists():
     env.read_env(str(ENV_PATH))
-    print("[DEBUG] .env loaded successfully")
-else:
-    print(f"WARNING: .env file not found at {ENV_PATH}")
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env(
@@ -33,10 +27,7 @@ allowed_env = env.str("ALLOWED_HOSTS", default="")
 if allowed_env:
     ALLOWED_HOSTS = [h.strip() for h in allowed_env.split(",") if h.strip()]
 else:
-    # Allow all in production when no ALLOWED_HOSTS specified - safer for container deployments
     ALLOWED_HOSTS = ["*"]
-
-print(f"[DEBUG] ALLOWED_HOSTS: {ALLOWED_HOSTS}")
 
 # Application definition
 INSTALLED_APPS = [
@@ -93,6 +84,10 @@ DATABASES = {
         "PASSWORD": env("DB_PASSWORD", default="Rightech777"),
         "HOST": env("DB_HOST", default="72.60.233.51"),
         "PORT": env("DB_PORT", default="5434"),
+        "CONN_MAX_AGE": 60,
+        "OPTIONS": {
+            "connect_timeout": 10,
+        },
     }
 }
 
