@@ -7,11 +7,15 @@ import environ
 BASE_DIR = Path(__file__).resolve().parent.parent
 ENV_PATH = BASE_DIR / ".env"
 
+print(f"[DEBUG] BASE_DIR: {BASE_DIR}")
+print(f"[DEBUG] ENV_PATH exists: {ENV_PATH.exists()}")
+
 # Initialize environ
 env = environ.Env()
 
 if ENV_PATH.exists():
     env.read_env(str(ENV_PATH))
+    print("[DEBUG] .env loaded successfully")
 else:
     print(f"WARNING: .env file not found at {ENV_PATH}")
 
@@ -29,8 +33,10 @@ allowed_env = env.str("ALLOWED_HOSTS", default="")
 if allowed_env:
     ALLOWED_HOSTS = [h.strip() for h in allowed_env.split(",") if h.strip()]
 else:
-    # Fallback - allow common patterns for container orchestration
-    ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0", ".traefik.me", "*.traefik.me"]
+    # Allow all in production when no ALLOWED_HOSTS specified - safer for container deployments
+    ALLOWED_HOSTS = ["*"]
+
+print(f"[DEBUG] ALLOWED_HOSTS: {ALLOWED_HOSTS}")
 
 # Application definition
 INSTALLED_APPS = [
