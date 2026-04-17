@@ -5,18 +5,32 @@ import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+ENV_PATH = BASE_DIR / ".env"
 
 # Initialize environ
 env = environ.Env()
-environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
+
+if ENV_PATH.exists():
+    env.read_env(str(ENV_PATH))
+else:
+    print(f"WARNING: .env file not found at {ENV_PATH}")
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env("SECRET_KEY", default="django-insecure--d@#u_95*ldt_yn)(*fqxkzx7n^eck-fxz=az&)o+_5@%9^op2")
+SECRET_KEY = env(
+    "SECRET_KEY",
+    default="django-insecure--d@#u_95*ldt_yn)(*fqxkzx7n^eck-fxz=az&)o+_5@%9^op2",
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DEBUG", default=False)
 
-ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
+# Build ALLOWED_HOSTS - read from env or use safe defaults
+allowed_env = env.str("ALLOWED_HOSTS", default="")
+if allowed_env:
+    ALLOWED_HOSTS = [h.strip() for h in allowed_env.split(",") if h.strip()]
+else:
+    # Fallback - allow common patterns for container orchestration
+    ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0", ".traefik.me", "*.traefik.me"]
 
 # Application definition
 INSTALLED_APPS = [
@@ -66,13 +80,13 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 # Database - PostgreSQL
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env("DB_NAME", default='kompra_db'),
-        'USER': env("DB_USER", default='raidevs'),
-        'PASSWORD': env("DB_PASSWORD", default='Rightech777'),
-        'HOST': env("DB_HOST", default='72.60.233.51'),
-        'PORT': env("DB_PORT", default='5434'),
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": env("DB_NAME", default="kompra_db"),
+        "USER": env("DB_USER", default="raidevs"),
+        "PASSWORD": env("DB_PASSWORD", default="Rightech777"),
+        "HOST": env("DB_HOST", default="72.60.233.51"),
+        "PORT": env("DB_PORT", default="5434"),
     }
 }
 
