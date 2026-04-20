@@ -519,6 +519,7 @@ class KompracorderSerializer(serializers.ModelSerializer):
     outlet_name = serializers.CharField(source="outletid.name", read_only=True)
     delivery_address = serializers.SerializerMethodField()
     current_step = serializers.SerializerMethodField()
+    delivery_fee = serializers.SerializerMethodField()
 
     class Meta:
         model = Kompracorder
@@ -538,6 +539,7 @@ class KompracorderSerializer(serializers.ModelSerializer):
             "outlet_name",
             "delivery_address",
             "current_step",
+            "delivery_fee",
         ]
 
     def get_items(self, obj):
@@ -549,14 +551,15 @@ class KompracorderSerializer(serializers.ModelSerializer):
         return KompracdeliverytrackingSerializer(tracking, many=True).data
 
     def get_order_type(self, obj):
-        if obj.deliveryaddressid and str(obj.deliveryaddressid.label).lower() == "pickup":
-            return "pickup"
-        return "delivery"
+        if obj.deliveryaddressid and obj.deliveryaddressid.label.lower() == "pickup":
+            return "PICKUP"
+        return "DELIVERY"
 
     def get_delivery_address(self, obj):
         if obj.deliveryaddressid:
             return obj.deliveryaddressid.address
         return None
+    
 
     def get_current_step(self, obj):
         order_type = self.get_order_type(obj)
@@ -583,6 +586,15 @@ class KompracorderSerializer(serializers.ModelSerializer):
             "completed": 5,
         }
         return delivery_status_map.get(status, 1)
+    
+
+    def get_delivery_fee(self, obj):
+        fee = Kompracorderfee.objects.filter(
+            orderid=obj,
+            type__iexact="delivery"
+        ).first()
+
+        return fee.amount if fee else 0
 
 
 class CheckoutSerializer(serializers.Serializer):

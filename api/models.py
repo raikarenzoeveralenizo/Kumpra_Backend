@@ -567,8 +567,14 @@ class Kompracorder(models.Model):
     customernote = models.TextField(db_column='customerNote', blank=True, null=True)
     outletnote = models.TextField(db_column='outletNote', blank=True, null=True)
 
-    createdat = models.DateTimeField(db_column='createdAt')
-    updatedat = models.DateTimeField(db_column='updatedAt')
+    createdat = models.DateTimeField(
+        db_column='createdAt',
+        default=timezone.now
+    )
+    updatedat = models.DateTimeField(
+        db_column='updatedAt',
+        auto_now=True
+    )
 
     class Meta:
         managed = False
