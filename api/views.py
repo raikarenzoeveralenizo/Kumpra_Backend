@@ -44,6 +44,7 @@ from .serializers import (
     SearchCategorySerializer,
     SearchOrganizationSerializer,
     SearchBranchSerializer,
+
 )
 
 
@@ -532,6 +533,51 @@ class OrderDetailView(generics.RetrieveAPIView):
         return Kompracorder.objects.filter(
             customerid__email=self.request.user.email
         )
+    
+
+class CancelOrderView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    @transaction.atomic
+    def post(self, request, pk):
+        try:
+            order = Kompracorder.objects.get(
+                id=pk,
+                customerid__email=request.user.email
+            )
+
+            # ❗ Only allow cancel if still pending
+            if order.status.lower() not in ["pending", "confirmed"]:
+                return Response(
+                    {"error": "Order cannot be cancelled."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            if order.status.lower() == "cancelled":
+                return Response(
+                    {"error": "Order already cancelled."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # ✅ RESTORE STOCK HERE
+            for item in order.kompracorderitem_set.all():
+                inventory_item = item.inventoryitemid
+                inventory_item.quantity += item.quantity
+                inventory_item.save()
+               
+
+            # ✅ UPDATE STATUS
+            order.status = "cancelled"
+            order.save()
+
+            return Response({"message": "Order cancelled successfully."})
+
+        except Kompracorder.DoesNotExist:
+            return Response(
+                {"error": "Order not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
     
 
 class GlobalSearchView(APIView):
