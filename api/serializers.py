@@ -175,7 +175,7 @@ class ProductListSerializer(serializers.ModelSerializer):
     inventory_item_id = serializers.IntegerField(source="id", read_only=True)
     product_id = serializers.IntegerField(source="itemid.id", read_only=True)
     name = serializers.CharField(source="itemid.name", read_only=True)
-    image = serializers.CharField(source="itemid.image", allow_null=True, read_only=True)
+    image = serializers.SerializerMethodField()
     description = serializers.CharField(source="itemid.description", allow_null=True, read_only=True)
 
     category_id = serializers.SerializerMethodField()
@@ -234,13 +234,30 @@ class ProductListSerializer(serializers.ModelSerializer):
             return obj.itemid.orgcategoryid.name
 
         return None
+    
+    def get_image(self, obj):
+        image = obj.itemid.image
+
+        if not image:
+            return None
+
+        # If already a full Supabase URL
+        if image.startswith("http"):
+            return image
+
+        # If somehow local path still exists
+        request = self.context.get("request")
+        if request:
+            return request.build_absolute_uri(image)
+
+        return image
 
 
 class ProductDetailSerializer(serializers.ModelSerializer):
     inventory_item_id = serializers.IntegerField(source="id", read_only=True)
     product_id = serializers.IntegerField(source="itemid.id", read_only=True)
     name = serializers.CharField(source="itemid.name", read_only=True)
-    image = serializers.CharField(source="itemid.image", allow_null=True, read_only=True)
+    image = serializers.SerializerMethodField()
     description = serializers.CharField(source="itemid.description", allow_null=True, read_only=True)
 
     category_id = serializers.SerializerMethodField()
@@ -317,6 +334,23 @@ class ProductDetailSerializer(serializers.ModelSerializer):
             return obj.itemid.orgcategoryid.name
 
         return None
+    
+    def get_image(self, obj):
+            image = obj.itemid.image
+
+            if not image:
+                return None
+
+            # If already a full Supabase URL
+            if image.startswith("http"):
+                return image
+
+            # If somehow local path still exists
+            request = self.context.get("request")
+            if request:
+                return request.build_absolute_uri(image)
+
+            return image
 
 
 class CategorySerializer(serializers.ModelSerializer):
