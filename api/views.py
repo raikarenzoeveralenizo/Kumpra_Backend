@@ -191,7 +191,17 @@ class DeliveryAddressListCreateView(generics.ListCreateAPIView):
         return DeliveryAddress.objects.filter(user=self.request.user).order_by("-is_default", "-created_at")
 
     def create(self, request, *args, **kwargs):
-        print("ADDRESS POST DATA:", request.data)
+        # 1. Log coordinates specifically for map debugging
+        lat = request.data.get('lat')
+        lng = request.data.get('lng')
+        print(f"MAP DEBUG: Received Lat: {lat}, Lng: {lng}")
+
+        # 2. Check for missing coordinates before saving
+        if lat is None or lng is None:
+            return Response(
+                {"error": "Map coordinates (lat/lng) are required for delivery addresses."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         serializer = self.get_serializer(data=request.data)
         if not serializer.is_valid():
@@ -202,6 +212,7 @@ class DeliveryAddressListCreateView(generics.ListCreateAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def perform_create(self, serializer):
+        # 3. Ensure the address is linked to the user
         serializer.save(user=self.request.user)
 
 

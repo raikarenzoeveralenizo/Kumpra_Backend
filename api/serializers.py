@@ -144,8 +144,11 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 
-# --- DELIVERY ADDRESS SERIALIZER ---
 class DeliveryAddressSerializer(serializers.ModelSerializer):
+    # Explicitly cast to Float for Map compatibility
+    lat = serializers.FloatField()
+    lng = serializers.FloatField()
+
     class Meta:
         model = DeliveryAddress
         fields = [
