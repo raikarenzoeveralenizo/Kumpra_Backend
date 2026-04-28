@@ -23,6 +23,8 @@ from .models import (
     CartItem,
     Kompracorder,
     Item,
+    Notification,
+    Orgitemcategory,
 )
 
 from .serializers import (
@@ -44,6 +46,8 @@ from .serializers import (
     SearchCategorySerializer,
     SearchOrganizationSerializer,
     SearchBranchSerializer,
+    NotificationSerializer,
+    OrgItemCategorySerializer,
 
 )
 
@@ -647,3 +651,23 @@ class GlobalSearchView(APIView):
         })
     
 
+
+class NotificationListView(APIView):
+    permission_classes = [AllowAny]
+    
+    def get(self, request):
+        org_id = request.query_params.get("orgId")
+
+        notifications = Notification.objects.filter(orgid=org_id).order_by('-createdat')
+        serializer = NotificationSerializer(notifications, many=True)
+
+        return Response(serializer.data)
+    
+
+class OrgItemCategoryListView(generics.ListAPIView):
+    serializer_class = OrgItemCategorySerializer
+    permission_classes = [AllowAny] 
+
+    def get_queryset(self):
+        org_id = self.kwargs['org_id']
+        return Orgitemcategory.objects.filter(orgid=org_id, isactive=True)
