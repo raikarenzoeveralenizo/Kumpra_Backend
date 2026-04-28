@@ -790,6 +790,21 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"{self.order.order_number} - {self.status}"
+    
+
+class Notification(models.Model):
+    orgid = models.ForeignKey('Organization', models.DO_NOTHING, db_column='orgId')  # Field name made lowercase.
+    outletid = models.ForeignKey('Outlet', models.DO_NOTHING, db_column='outletId', blank=True, null=True)  # Field name made lowercase.
+    itemid = models.ForeignKey(Item, models.DO_NOTHING, db_column='itemId', blank=True, null=True)  # Field name made lowercase.
+    type = models.TextField()  # This field type is a guess.
+    title = models.TextField()
+    message = models.TextField()
+    isread = models.BooleanField(db_column='isRead')  # Field name made lowercase.
+    createdat = models.DateTimeField(db_column='createdAt')  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'Notification'
 
 
 

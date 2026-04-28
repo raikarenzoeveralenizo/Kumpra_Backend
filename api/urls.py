@@ -24,6 +24,8 @@ from .views import (
     GlobalSearchView,
     UpdateProfileView,
     CancelOrderView,
+    NotificationListView,
+    OrgItemCategoryListView,
 )
 
 urlpatterns = [
@@ -59,5 +61,9 @@ urlpatterns = [
     path("orders/<int:pk>/cancel/", CancelOrderView.as_view()),
 
     path("user/update-profile/", UpdateProfileView.as_view(), name="update-profile"),
+
+    path('notifications/', NotificationListView.as_view()),
+
+    path('org-item-categories/<int:org_id>/', OrgItemCategoryListView.as_view()),
 
 ]

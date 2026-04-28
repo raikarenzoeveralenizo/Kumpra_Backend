@@ -23,6 +23,8 @@ from .models import (
     Kompracorderfee,
     Kompracustomer,
     Kompracdeliverytracking,
+    Notification,
+    Orgitemcategory,
 )
 
 
@@ -872,3 +874,16 @@ class SearchBranchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Branch
         fields = ["id", "name", "address", "phone"]
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = '__all__'
+
+
+
+class OrgItemCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Orgitemcategory
+        fields = '__all__'
