@@ -409,6 +409,15 @@ class Media(models.Model):
 class Organization(models.Model):
     name = models.TextField()
     createdat = models.DateTimeField(db_column='createdAt')  # Field name made lowercase.
+    bannerimg = models.TextField(db_column='bannerImg', blank=True, null=True)  # Field name made lowercase.
+    contactnumber = models.TextField(db_column='contactNumber', blank=True, null=True)  # Field name made lowercase.
+    email = models.TextField(blank=True, null=True)
+    location = models.TextField(blank=True, null=True)
+    profilephoto = models.TextField(db_column='profilePhoto', blank=True, null=True)  # Field name made lowercase.
+    facebooklink = models.TextField(db_column='facebookLink', blank=True, null=True)  # Field name made lowercase.
+    instagramlink = models.TextField(db_column='instagramLink', blank=True, null=True)  # Field name made lowercase.
+    twitterlink = models.TextField(db_column='twitterLink', blank=True, null=True)  # Field name made lowercase.
+    bio = models.TextField(blank=True, null=True)
 
     class Meta:
         managed = False
@@ -527,58 +536,63 @@ class Kompracdeliverytracking(models.Model):
 
 
 class Kompracorder(models.Model):
-    transactionnumber = models.TextField(db_column='transactionNumber', unique=True)
-
-    customerid = models.ForeignKey(
-        'Kompracustomer',
-        models.DO_NOTHING,
-        db_column='customerId'
-    )
-
-    outletid = models.ForeignKey(
-        'Outlet',
-        models.DO_NOTHING,
-        db_column='outletId'
-    )
-
+    transactionnumber = models.TextField(db_column='transactionNumber', unique=True)  # Field name made lowercase.
+    customerid = models.ForeignKey('Kompracustomer', models.DO_NOTHING, db_column='customerId')  # Field name made lowercase.
+    outletid = models.ForeignKey('Outlet', models.DO_NOTHING, db_column='outletId')  # Field name made lowercase.
     deliveryaddressid = models.ForeignKey(
         'PosDeliveryAddress',
         models.DO_NOTHING,
-        db_column='deliveryAddressId',
-        null=True,
-        blank=True
+        db_column='deliveryAddressId'
     )
-
     subtotal = models.FloatField()
     total = models.FloatField()
-    status = models.TextField()
-
-    scheduleddeliveryat = models.DateTimeField(db_column='scheduledDeliveryAt', blank=True, null=True)
-    estimateddeliveryat = models.DateTimeField(db_column='estimatedDeliveryAt', blank=True, null=True)
-    deliveredat = models.DateTimeField(db_column='deliveredAt', blank=True, null=True)
-
-    paymentmethod = models.TextField(db_column='paymentMethod')
-    paymentstatus = models.TextField(db_column='paymentStatus')
-    paymentreference = models.TextField(db_column='paymentReference', blank=True, null=True)
-
-    ridername = models.TextField(db_column='riderName', blank=True, null=True)
-    riderphone = models.TextField(db_column='riderPhone', blank=True, null=True)
-
-    customernote = models.TextField(db_column='customerNote', blank=True, null=True)
-    outletnote = models.TextField(db_column='outletNote', blank=True, null=True)
-
-    createdat = models.DateTimeField(
-        db_column='createdAt',
-        default=timezone.now
-    )
-    updatedat = models.DateTimeField(
-        db_column='updatedAt',
-        auto_now=True
-    )
+    status = models.TextField()  # This field type is a guess.
+    scheduleddeliveryat = models.DateTimeField(db_column='scheduledDeliveryAt', blank=True, null=True)  # Field name made lowercase.
+    estimateddeliveryat = models.DateTimeField(db_column='estimatedDeliveryAt', blank=True, null=True)  # Field name made lowercase.
+    deliveredat = models.DateTimeField(db_column='deliveredAt', blank=True, null=True)  # Field name made lowercase.
+    paymentmethod = models.TextField(db_column='paymentMethod')  # Field name made lowercase. This field type is a guess.
+    paymentstatus = models.TextField(db_column='paymentStatus')  # Field name made lowercase.
+    paymentreference = models.TextField(db_column='paymentReference', blank=True, null=True)  # Field name made lowercase.
+    ridername = models.TextField(db_column='riderName', blank=True, null=True)  # Field name made lowercase.
+    riderphone = models.TextField(db_column='riderPhone', blank=True, null=True)  # Field name made lowercase.
+    customernote = models.TextField(db_column='customerNote', blank=True, null=True)  # Field name made lowercase.
+    outletnote = models.TextField(db_column='outletNote', blank=True, null=True)  # Field name made lowercase.
+    createdat = models.DateTimeField(db_column='createdAt')  # Field name made lowercase.
+    updatedat = models.DateTimeField(db_column='updatedAt')  # Field name made lowercase.
+    courierid = models.ForeignKey('Courier', models.DO_NOTHING, db_column='courierId', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
         managed = False
         db_table = 'KompraCOrder'
+
+
+class Courier(models.Model):
+    name = models.TextField()
+    phone = models.TextField()
+    createdat = models.DateTimeField(db_column='createdAt')  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'Courier'
+
+class OrderCourierPreference(models.Model):
+    id = models.AutoField(primary_key=True)
+
+    order = models.ForeignKey(
+        'Kompracorder',
+        models.DO_NOTHING,
+        db_column='order_id'
+    )
+
+    courier = models.ForeignKey(
+        'Courier',
+        models.DO_NOTHING,
+        db_column='courier_id'
+    )
+
+    class Meta:
+        managed = False
+        db_table = 'OrderCourierPreference'
 
 
 class Kompracorderfee(models.Model):
@@ -620,176 +634,6 @@ class Outletdeliveryconfig(models.Model):
     class Meta:
         managed = False
         db_table = 'OutletDeliveryConfig'
-
-
-
-class Order(models.Model):
-    ORDER_TYPE_CHOICES = [
-        ("DELIVERY", "Delivery"),
-        ("PICKUP", "Pickup"),
-    ]
-
-    STATUS_CHOICES = [
-        ("PENDING", "Pending"),
-        ("CONFIRMED", "Confirmed"),
-        ("PREPARING", "Preparing"),
-        ("READY", "Ready"),
-        ("OUT_FOR_DELIVERY", "Out for Delivery"),
-        ("COMPLETED", "Completed"),
-        ("CANCELLED", "Cancelled"),
-    ]
-
-    PAYMENT_STATUS_CHOICES = [
-        ("PENDING", "Pending"),
-        ("PAID", "Paid"),
-        ("FAILED", "Failed"),
-    ]
-
-    order_number = models.CharField(max_length=30, unique=True)
-
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="orders"
-    )
-
-    outlet = models.ForeignKey(
-        Outlet,
-        on_delete=models.CASCADE,
-        related_name="orders"
-    )
-
-    delivery_address = models.ForeignKey(
-        DeliveryAddress,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True
-    )
-
-    order_type = models.CharField(max_length=10, choices=ORDER_TYPE_CHOICES)
-
-    subtotal = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    delivery_fee = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    discount_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    total = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="PENDING")
-
-    payment_method = models.CharField(max_length=30)
-    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default="PENDING")
-    payment_reference = models.CharField(max_length=100, blank=True, null=True)
-
-    rider_name = models.CharField(max_length=255, blank=True, null=True)
-    rider_phone = models.CharField(max_length=20, blank=True, null=True)
-
-    customer_note = models.TextField(blank=True, null=True)
-    outlet_note = models.TextField(blank=True, null=True)
-
-    placed_at = models.DateTimeField(default=timezone.now)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def save(self, *args, **kwargs):
-        if not self.order_number:
-            self.order_number = f"KMP-{random.randint(100000, 999999)}"
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return self.order_number
-    
-
-
-class OrderItem(models.Model):
-    order = models.ForeignKey(
-        Order,
-        on_delete=models.CASCADE,
-        related_name="items"
-    )
-
-    inventory_item = models.ForeignKey(
-        Inventoryitems,
-        on_delete=models.CASCADE
-    )
-
-    item = models.ForeignKey(
-        Item,
-        on_delete=models.CASCADE
-    )
-
-    unit = models.ForeignKey(
-        Inventoryitemunit,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True
-    )
-
-    product_name = models.CharField(max_length=255)
-
-    quantity = models.PositiveIntegerField()
-    unit_price = models.DecimalField(max_digits=12, decimal_places=2)
-    subtotal = models.DecimalField(max_digits=12, decimal_places=2)
-
-    def __str__(self):
-        return f"{self.product_name} x {self.quantity}"
-
-
-class OrderFee(models.Model):
-    order = models.ForeignKey(
-        Order,
-        on_delete=models.CASCADE,
-        related_name="fees"
-    )
-
-    type = models.CharField(max_length=20)  # DELIVERY, SERVICE, DISCOUNT
-    label = models.CharField(max_length=100)
-    amount = models.DecimalField(max_digits=12, decimal_places=2)
-
-    def __str__(self):
-        return f"{self.label} - {self.amount}"
-    
-
-
-class OrderTracking(models.Model):
-    order = models.ForeignKey(
-        Order,
-        on_delete=models.CASCADE,
-        related_name="tracking"
-    )
-
-    event = models.CharField(max_length=100)
-    status_at = models.DateTimeField(default=timezone.now)
-
-    current_lat = models.FloatField(blank=True, null=True)
-    current_lng = models.FloatField(blank=True, null=True)
-
-    note = models.TextField(blank=True, null=True)
-
-    actor_type = models.CharField(max_length=50, blank=True, null=True)
-    actor_id = models.IntegerField(blank=True, null=True)
-
-    def __str__(self):
-        return f"{self.order.order_number} - {self.event}"
-    
-
-
-class Payment(models.Model):
-    order = models.OneToOneField(
-        Order,
-        on_delete=models.CASCADE,
-        related_name="payment"
-    )
-
-    payment_method = models.CharField(max_length=30)
-    payment_reference = models.CharField(max_length=100, blank=True, null=True)
-
-    amount = models.DecimalField(max_digits=12, decimal_places=2)
-
-    status = models.CharField(max_length=20, default="PENDING")
-
-    paid_at = models.DateTimeField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.order.order_number} - {self.status}"
     
 
 class Notification(models.Model):

@@ -25,6 +25,8 @@ from .models import (
     Kompracdeliverytracking,
     Notification,
     Orgitemcategory,
+    Courier,
+    OrderCourierPreference,
 )
 
 
@@ -434,6 +436,19 @@ class OrganizationSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "createdat",
+
+            # ✅ ADD THESE
+            "bannerimg",
+            "contactnumber",
+            "email",
+            "location",
+            "profilephoto",
+            "facebooklink",
+            "instagramlink",
+            "twitterlink",
+            "bio",
+
+            # existing computed fields
             "branches",
             "total_branches",
             "total_outlets",
@@ -548,6 +563,12 @@ class KompracdeliverytrackingSerializer(serializers.ModelSerializer):
         ]
 
 
+class CourierSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Courier
+        fields = ["id", "name", "phone"]
+
+
 class KompracorderSerializer(serializers.ModelSerializer):
     items = serializers.SerializerMethodField()
     tracking = serializers.SerializerMethodField()
@@ -556,6 +577,7 @@ class KompracorderSerializer(serializers.ModelSerializer):
     delivery_address = serializers.SerializerMethodField()
     current_step = serializers.SerializerMethodField()
     delivery_fee = serializers.SerializerMethodField()
+    couriers = serializers.SerializerMethodField()
 
     class Meta:
         model = Kompracorder
@@ -576,6 +598,7 @@ class KompracorderSerializer(serializers.ModelSerializer):
             "delivery_address",
             "current_step",
             "delivery_fee",
+            "couriers",
         ]
 
     def get_items(self, obj):
@@ -631,6 +654,19 @@ class KompracorderSerializer(serializers.ModelSerializer):
         ).first()
 
         return fee.amount if fee else 0
+    
+    
+    def get_couriers(self, obj):
+        preferences = OrderCourierPreference.objects.filter(order=obj)
+
+        return [
+            {
+                "id": p.courier.id,
+                "name": p.courier.name,
+                "phone": p.courier.phone,
+            }
+            for p in preferences
+        ]
 
 
 class CheckoutSerializer(serializers.Serializer):
@@ -639,6 +675,10 @@ class CheckoutSerializer(serializers.Serializer):
     order_type = serializers.ChoiceField(choices=["DELIVERY", "PICKUP"])
     payment_method = serializers.CharField()
     customer_note = serializers.CharField(required=False, allow_blank=True)
+    courier_ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        required=False
+    )
 
     def create(self, validated_data):
         user = self.context["request"].user
@@ -652,6 +692,8 @@ class CheckoutSerializer(serializers.Serializer):
         if not cart_items.exists():
             raise serializers.ValidationError("Cart is empty.")
 
+
+
         try:
             outlet = Outlet.objects.get(id=validated_data["outlet_id"])
         except Outlet.DoesNotExist:
@@ -660,6 +702,21 @@ class CheckoutSerializer(serializers.Serializer):
         django_address = None
         delivery_address_id = validated_data.get("delivery_address_id")
         order_type = validated_data["order_type"]
+
+
+        courier_ids = list(set(validated_data.get("courier_ids", [])))
+
+        if order_type == "DELIVERY":
+            if not courier_ids:
+                raise serializers.ValidationError("Select at least 1 courier.")
+
+            if len(courier_ids) > 3:
+                raise serializers.ValidationError("You can select up to 3 couriers only.")
+
+            valid_couriers = Courier.objects.filter(id__in=courier_ids)
+
+            if len(valid_couriers) != len(courier_ids):
+                raise serializers.ValidationError("One or more selected couriers are invalid.")
 
         if order_type == "DELIVERY":
             if not delivery_address_id:
@@ -771,6 +828,16 @@ class CheckoutSerializer(serializers.Serializer):
             updatedat=timezone.now(),
         )
 
+        # ✅ SAVE COURIER PREFERENCES
+        if order_type == "DELIVERY":
+            valid_couriers = Courier.objects.filter(id__in=courier_ids)
+
+        for courier in valid_couriers:
+            OrderCourierPreference.objects.create(
+                order=order,
+                courier=courier
+            )
+
         for cart_item in cart_items:
             try:
                 # 1. Get the inventory item and "lock" the row for the transaction
@@ -812,6 +879,8 @@ class CheckoutSerializer(serializers.Serializer):
 
         cart.items.all().delete()
         return order
+    
+    
     
 
 class SearchProductSerializer(serializers.ModelSerializer):

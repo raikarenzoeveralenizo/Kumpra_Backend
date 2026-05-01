@@ -26,6 +26,8 @@ from .views import (
     CancelOrderView,
     NotificationListView,
     OrgItemCategoryListView,
+    OrganizationBySlugView,
+    CourierListView,
 )
 
 urlpatterns = [
@@ -65,5 +67,9 @@ urlpatterns = [
     path('notifications/', NotificationListView.as_view()),
 
     path('org-item-categories/<int:org_id>/', OrgItemCategoryListView.as_view()),
+
+    path("organizations/slug/<slug:slug>/", OrganizationBySlugView.as_view()),
+
+    path("couriers/", CourierListView.as_view()),
 
 ]

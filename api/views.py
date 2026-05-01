@@ -10,6 +10,7 @@ from rest_framework.permissions import AllowAny
 from django.db import transaction
 from rest_framework.exceptions import ValidationError
 from django.db.models import Count, Q
+from django.utils.text import slugify
 
 from .models import (
     User,
@@ -25,6 +26,7 @@ from .models import (
     Item,
     Notification,
     Orgitemcategory,
+    Courier,
 )
 
 from .serializers import (
@@ -48,6 +50,7 @@ from .serializers import (
     SearchBranchSerializer,
     NotificationSerializer,
     OrgItemCategorySerializer,
+    CourierSerializer,
 
 )
 
@@ -315,6 +318,23 @@ class OrganizationDetailView(generics.RetrieveAPIView):
 
     def get_queryset(self):
         return Organization.objects.all()
+    
+
+class OrganizationBySlugView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, slug):
+        organizations = Organization.objects.all()
+
+        for org in organizations:
+            if slugify(org.name) == slug:
+                serializer = OrganizationSerializer(org)
+                return Response(serializer.data)
+
+        return Response(
+            {"error": "Organization not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
 
 
 class BranchDetailView(generics.RetrieveAPIView):
@@ -497,6 +517,7 @@ class CheckoutView(APIView):
                 context={"request": request}
             )
             serializer.is_valid(raise_exception=True)
+            print("COURIER IDS RECEIVED:", request.data.get("courier_ids"))
             order = serializer.save()
 
             print("CHECKOUT ORDER CREATED:", order.id, order.transactionnumber)
@@ -524,7 +545,9 @@ class OrderListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Kompracorder.objects.filter(
+        return Kompracorder.objects.prefetch_related(
+            "ordercourierpreference_set__courier"
+        ).filter(
             customerid__email=self.request.user.email
         ).order_by("-createdat")
 
@@ -534,10 +557,18 @@ class OrderDetailView(generics.RetrieveAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Kompracorder.objects.filter(
+        return Kompracorder.objects.prefetch_related(
+            "ordercourierpreference_set__courier"
+        ).filter(
             customerid__email=self.request.user.email
         )
     
+
+class CourierListView(generics.ListAPIView):
+    permission_classes = [permissions.AllowAny]
+    queryset = Courier.objects.all()
+    serializer_class = CourierSerializer
+            
 
 class CancelOrderView(APIView):
     permission_classes = [permissions.IsAuthenticated]
