@@ -29,6 +29,8 @@ from .views import (
     OrganizationBySlugView,
     CourierListView,
     OrganizationSearchView,
+    MarkAllReadView,
+    NotificationDeleteView,
 )
 
 urlpatterns = [
@@ -66,6 +68,8 @@ urlpatterns = [
     path("user/update-profile/", UpdateProfileView.as_view(), name="update-profile"),
 
     path('notifications/', NotificationListView.as_view()),
+    path('notifications/mark-all-read/', MarkAllReadView.as_view()),
+    path('notifications/<int:pk>/', NotificationDeleteView.as_view()),
 
     path('org-item-categories/<int:org_id>/', OrgItemCategoryListView.as_view()),
 
