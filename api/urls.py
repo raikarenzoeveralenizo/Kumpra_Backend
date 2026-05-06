@@ -28,6 +28,7 @@ from .views import (
     OrgItemCategoryListView,
     OrganizationBySlugView,
     CourierListView,
+    OrganizationSearchView,
 )
 
 urlpatterns = [
@@ -71,5 +72,7 @@ urlpatterns = [
     path("organizations/slug/<slug:slug>/", OrganizationBySlugView.as_view()),
 
     path("couriers/", CourierListView.as_view()),
+
+    path('organization/<int:org_id>/search/', OrganizationSearchView.as_view()),
 
 ]

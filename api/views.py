@@ -702,3 +702,52 @@ class OrgItemCategoryListView(generics.ListAPIView):
     def get_queryset(self):
         org_id = self.kwargs['org_id']
         return Orgitemcategory.objects.filter(orgid=org_id, isactive=True)
+
+
+class OrganizationSearchView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, org_id):
+        query = (request.query_params.get("q") or "").strip()
+
+        if not query:
+            return Response({
+                "products": [],
+                "stores": [],
+                "branches": [],
+            })
+
+        # ✅ PRODUCTS (simplified + reliable)
+        products = Inventoryitems.objects.select_related(
+            "itemid",
+            "inventoryid",
+            "inventoryid__outletid",
+            "inventoryid__outletid__branchid",
+        ).filter(
+            inventoryid__outletid__orgid_id=org_id
+        ).filter(
+            Q(itemid__name__icontains=query) |
+            Q(itemid__description__icontains=query)
+        ).distinct()
+
+        # ✅ STORES / OUTLETS
+        stores = Outlet.objects.filter(
+            orgid_id=org_id
+        ).filter(
+            Q(name__icontains=query) |
+            Q(address__icontains=query)
+        )
+
+        # ✅ BRANCHES
+        branches = Branch.objects.filter(
+            orgid_id=org_id
+        ).filter(
+            Q(name__icontains=query) |
+            Q(address__icontains=query)
+        )
+
+        return Response({
+            "products": SearchProductSerializer(products, many=True).data,
+            "stores": SearchStoreSerializer(stores, many=True).data,
+            "branches": SearchBranchSerializer(branches, many=True).data,
+        })
