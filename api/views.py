@@ -685,14 +685,48 @@ class GlobalSearchView(APIView):
 
 class NotificationListView(APIView):
     permission_classes = [AllowAny]
-    
+
     def get(self, request):
         org_id = request.query_params.get("orgId")
 
-        notifications = Notification.objects.filter(orgid=org_id).order_by('-createdat')
-        serializer = NotificationSerializer(notifications, many=True)
+        if not org_id:
+            return Response({"error": "orgId is required"}, status=400)
 
+        notifications = Notification.objects.filter(
+            orgid_id=org_id
+        ).order_by('-createdat')
+
+        serializer = NotificationSerializer(notifications, many=True)
         return Response(serializer.data)
+
+
+class MarkAllReadView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        org_id = request.data.get("orgId")
+
+        if not org_id:
+            return Response({"error": "orgId is required"}, status=400)
+
+        Notification.objects.filter(
+            orgid_id=org_id,
+            isread=False
+        ).update(isread=True)
+
+        return Response({"message": "All notifications marked as read"})
+    
+
+class NotificationDeleteView(APIView):
+    permission_classes = [AllowAny]
+
+    def delete(self, request, pk):
+        try:
+            notification = Notification.objects.get(pk=pk)
+            notification.delete()
+            return Response({"message": "Deleted successfully"})
+        except Notification.DoesNotExist:
+            return Response({"error": "Notification not found"}, status=404)
     
 
 class OrgItemCategoryListView(generics.ListAPIView):

@@ -637,18 +637,51 @@ class Outletdeliveryconfig(models.Model):
     
 
 class Notification(models.Model):
-    orgid = models.ForeignKey('Organization', models.DO_NOTHING, db_column='orgId')  # Field name made lowercase.
-    outletid = models.ForeignKey('Outlet', models.DO_NOTHING, db_column='outletId', blank=True, null=True)  # Field name made lowercase.
-    itemid = models.ForeignKey(Item, models.DO_NOTHING, db_column='itemId', blank=True, null=True)  # Field name made lowercase.
-    type = models.TextField()  # This field type is a guess.
-    title = models.TextField()
+    id = models.AutoField(primary_key=True)
+
+    orgid = models.ForeignKey(
+        'Organization',
+        models.DO_NOTHING,
+        db_column='orgId',
+        related_name='notifications'
+    )
+
+    outletid = models.ForeignKey(
+        'Outlet',
+        models.DO_NOTHING,
+        db_column='outletId',
+        blank=True,
+        null=True
+    )
+
+    itemid = models.ForeignKey(
+        'Item',
+        models.DO_NOTHING,
+        db_column='itemId',
+        blank=True,
+        null=True
+    )
+
+    type = models.CharField(max_length=50)  # better than TextField
+    title = models.CharField(max_length=255)
     message = models.TextField()
-    isread = models.BooleanField(db_column='isRead')  # Field name made lowercase.
-    createdat = models.DateTimeField(db_column='createdAt')  # Field name made lowercase.
+
+    isread = models.BooleanField(
+        db_column='isRead',
+        default=False
+    )
+
+    createdat = models.DateTimeField(
+        db_column='createdAt',
+        default=timezone.now
+    )
 
     class Meta:
-        managed = False
         db_table = 'Notification'
+        ordering = ['-createdat']
+
+    def __str__(self):
+        return f"{self.title} ({self.type})"
 
 
 
