@@ -176,12 +176,20 @@ class UpdateProfileView(APIView):
 
     # ADD THIS: Handle fetching profile data
     def get(self, request):
-        serializer = UserSerializer(request.user)
+        serializer = UserSerializer(
+            request.user,
+            context={"request": request}
+        )
         return Response(serializer.data)
 
     def patch(self, request):
         user = request.user
-        serializer = UserSerializer(user, data=request.data, partial=True)
+        serializer = UserSerializer(
+            user,
+            data=request.data,
+            partial=True,
+            context={"request": request}
+        )
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)

@@ -32,6 +32,8 @@ from .models import (
 
 # --- USER SERIALIZER ---
 class UserSerializer(serializers.ModelSerializer):
+    profile_image = serializers.SerializerMethodField()
+
     class Meta:
         model = User
         fields = [
@@ -47,6 +49,13 @@ class UserSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["is_verified"]
 
+    def get_profile_image(self, obj):
+        request = self.context.get("request")
+
+        if obj.profile_image:
+            return request.build_absolute_uri(obj.profile_image.url)
+
+        return None
 
 # --- REGISTRATION SERIALIZER ---
 class RegisterSerializer(serializers.ModelSerializer):
@@ -707,16 +716,24 @@ class CheckoutSerializer(serializers.Serializer):
         courier_ids = list(set(validated_data.get("courier_ids", [])))
 
         if order_type == "DELIVERY":
-            if not courier_ids:
-                raise serializers.ValidationError("Select at least 1 courier.")
 
-            if len(courier_ids) > 3:
-                raise serializers.ValidationError("You can select up to 3 couriers only.")
+            # allow empty courier list for "Any"
+            if courier_ids:
 
-            valid_couriers = Courier.objects.filter(id__in=courier_ids)
+                if len(courier_ids) > 3:
+                    raise serializers.ValidationError(
+                        "You can select up to 3 couriers only."
+                    )
 
-            if len(valid_couriers) != len(courier_ids):
-                raise serializers.ValidationError("One or more selected couriers are invalid.")
+                valid_couriers = Courier.objects.filter(id__in=courier_ids)
+
+                if len(valid_couriers) != len(courier_ids):
+                    raise serializers.ValidationError(
+                        "One or more selected couriers are invalid."
+                    )
+
+            else:
+                valid_couriers = []
 
         if order_type == "DELIVERY":
             if not delivery_address_id:
@@ -829,9 +846,6 @@ class CheckoutSerializer(serializers.Serializer):
         )
 
         # ✅ SAVE COURIER PREFERENCES
-        if order_type == "DELIVERY":
-            valid_couriers = Courier.objects.filter(id__in=courier_ids)
-
         for courier in valid_couriers:
             OrderCourierPreference.objects.create(
                 order=order,
